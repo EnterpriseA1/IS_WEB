@@ -9,23 +9,36 @@ import pickle
 from sklearn.preprocessing import StandardScaler
 from pathlib import Path
 import matplotlib.pyplot as plt
-
+from sklearn.inspection import permutation_importance
 import seaborn as sns
-# โหลดโมเดลที่เทรนไว้และโหลดตัวปรับมาตรฐาน (Scaler) ใหม่ทุกครั้ง
-model_path = Path.cwd()/"model_training"/ "modelRF.pkl"
-scaler_path = Path.cwd()/"model_training" / "scalerRF.pkl"
 
-with open(model_path, "rb") as file:
+model_path_RF = Path.cwd()/"model_training"/ "modelRF.pkl"
+scaler_path_RF = Path.cwd()/"model_training" / "scalerRF.pkl"
+
+model_path_knr = Path.cwd()/"model_training"/ "modelKnr.pkl"
+scaler_path_knr = Path.cwd()/"model_training" / "scalerKNR.pkl"
+with open(model_path_RF, "rb") as file:
     rf_model = pickle.load(file)
 
-with open(scaler_path, "rb") as file:
-    scaler = pickle.load(file)
+with open(scaler_path_RF, "rb") as file:
+    scalerRF = pickle.load(file)
+    
+with open(model_path_knr, 'rb') as file:
+    Knr_model = pickle.load(file)
+
+with open(scaler_path_knr, 'rb') as file:
+    scalerKnr = pickle.load(file)
         
 # ฟังก์ชันทำนายราคาบ้าน
-def predict_house_price(features):
+def predict_house_price_rf(features):
     # ปรับค่าฟีเจอร์
-    features_scaled = scaler.transform([features])  
+    features_scaled = scalerRF.transform([features])  
     price_pred = rf_model.predict(features_scaled)
+    return price_pred[0]
+def predict_house_price_knr(features):
+    # ปรับค่าฟีเจอร์
+    features_scaled = scalerKnr.transform([features])  
+    price_pred = Knr_model.predict(features_scaled)
     return price_pred[0]
     
 
@@ -57,10 +70,10 @@ coapplicant_value = coapplicant_mapping[coapplicant]
 
 
 # กดปุ่มเพื่อทำนาย
-if st.button("🔍 Predict Price"):
+if st.button("🔍 Predict Price Random forest"):
     input_features = np.array([area_value, coapplicant_value, dependents, income, loan_amount, property_age,
                                bedrooms, bathrooms, area_sqft])
-    predicted_price = predict_house_price(input_features)
+    predicted_price = predict_house_price_rf(input_features)
     st.success(f"🏠 ราคาที่คาดการณ์: {predicted_price:,.2f} บาท")
     
     # Feature Importance Plot
@@ -75,7 +88,13 @@ if st.button("🔍 Predict Price"):
     ax.set_xlabel("Importance")
     ax.set_ylabel("Features")
     st.pyplot(fig)
+if st.button("🔍 Predict Price KNR"):
+    input_features = np.array([area_value, coapplicant_value, dependents, income, loan_amount, property_age,
+                               bedrooms, bathrooms, area_sqft])
+    predicted_price = predict_house_price_knr(input_features)
+    st.success(f"🏠 ราคาที่คาดการณ์: {predicted_price:,.2f} บาท")
     
+   
     
     
     
