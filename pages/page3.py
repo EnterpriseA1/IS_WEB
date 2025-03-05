@@ -35,13 +35,13 @@ st.write("กรอกข้อมูลเกี่ยวกับบ้าน�
 # อินพุตฟอร์มสำหรับรับข้อมูล
 area = st.selectbox("Area (พื้นที่ที่อยู่อาศัย)", ["Urban", "Semiurban", "Rural"])
 coapplicant = st.selectbox("Coapplicant (ผู้ร่วมยื่นขอสินเชื่อ)", ["Yes", "No"])
-dependents = st.number_input("Dependents (จำนวนผู้ที่พึ่งพา)", min_value=0, max_value=10, value=0)
-income = st.number_input("Income (รายได้)", min_value=0.0, max_value=1000000.0, value=50000.0)
-loan_amount = st.number_input("Loan Amount (จำนวนเงินกู้)", min_value=1000.0, max_value=1000000.0, value=200000.0)
-property_age = st.number_input("Property Age (อายุทรัพย์สิน)", min_value=0, max_value=100, value=10)
-bedrooms = st.number_input("Bedrooms (จำนวนห้องนอน)", min_value=1, max_value=10, value=3)
-bathrooms = st.number_input("Bathrooms (จำนวนห้องน้ำ)", min_value=1, max_value=10, value=2)
-area_sqft = st.number_input("Area SqFt (ขนาดพื้นที่บ้าน ตร.ฟุต)", min_value=100, max_value=10000, value=1000)
+dependents = st.number_input("Dependents (จำนวนผู้ที่พึ่งพา)", value=0)
+income = st.number_input("Income (รายได้)", value=50000.0)
+loan_amount = st.number_input("Loan Amount (จำนวนเงินกู้)" value=200000.0)
+property_age = st.number_input("Property Age (อายุทรัพย์สิน)" value=10)
+bedrooms = st.number_input("Bedrooms (จำนวนห้องนอน)",  value=3)
+bathrooms = st.number_input("Bathrooms (จำนวนห้องน้ำ)",  value=2)
+area_sqft = st.number_input("Area SqFt (ขนาดพื้นที่บ้าน ตร.ฟุต)", value=1000)
 
 # แปลงค่า categorical เป็นตัวเลข
 
