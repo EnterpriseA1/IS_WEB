@@ -37,7 +37,7 @@ area = st.selectbox("Area (พื้นที่ที่อยู่อาศ�
 coapplicant = st.selectbox("Coapplicant (ผู้ร่วมยื่นขอสินเชื่อ)", ["Yes", "No"])
 dependents = st.number_input("Dependents (จำนวนผู้ที่พึ่งพา)", value=0)
 income = st.number_input("Income (รายได้)", value=50000.0)
-loan_amount = st.number_input("Loan Amount (จำนวนเงินกู้)" value=200000.0)
+loan_amount = st.number_input("Loan Amount (จำนวนเงินกู้)" ,value=200000.0)
 property_age = st.number_input("Property Age (อายุทรัพย์สิน)" value=10)
 bedrooms = st.number_input("Bedrooms (จำนวนห้องนอน)",  value=3)
 bathrooms = st.number_input("Bathrooms (จำนวนห้องน้ำ)",  value=2)
