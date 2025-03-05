@@ -8,6 +8,8 @@ import numpy as np
 import pickle
 from sklearn.preprocessing import StandardScaler
 from pathlib import Path
+import matplotlib.pyplot as plt
+
 
 # ฟังก์ชันทำนายราคาบ้าน
 def predict_house_price(features):
@@ -57,5 +59,49 @@ if st.button("🔍 Predict Price"):
                                bedrooms, bathrooms, area_sqft])
     predicted_price = predict_house_price(input_features)
     st.success(f"🏠 ราคาที่คาดการณ์: {predicted_price:,.2f} บาท")
+    
+    # PDP: Partial Dependence Plot สำหรับทุกฟีเจอร์
+    st.write("### Partial Dependence Plot (PDP) for All Features")
+
+    # สร้างข้อมูลจำลองสำหรับการทำนาย
+    feature_names = ["Area", "Coapplicant", "Dependents", "Income", "Loan Amount", "Property Age", "Bedrooms", "Bathrooms", "Area SqFt"]
+    
+    # สร้างลิสต์เพื่อเก็บผลลัพธ์ของ PDP
+    pdp_values = {feature: [] for feature in feature_names}
+    feature_ranges = {
+        "Area": np.linspace(0, 2, 100),
+        "Coapplicant": np.linspace(0, 1, 100),
+        "Dependents": np.linspace(0, 10, 100),
+        "Income": np.linspace(0, 1000000, 100),
+        "Loan Amount": np.linspace(1000, 1000000, 100),
+        "Property Age": np.linspace(0, 100, 100),
+        "Bedrooms": np.linspace(1, 10, 100),
+        "Bathrooms": np.linspace(1, 10, 100),
+        "Area SqFt": np.linspace(100, 10000, 100)
+    }
+
+    # คำนวณ PDP สำหรับทุกฟีเจอร์
+    for feature in feature_names:
+        feature_index = feature_names.index(feature)
+        feature_range = feature_ranges[feature]
+        
+        for value in feature_range:
+            temp_features = input_features.copy()
+            temp_features[feature_index] = value  # เปลี่ยนแปลงค่าฟีเจอร์ที่เลือก
+            price = predict_house_price(temp_features)
+            pdp_values[feature].append(price)
+    
+    # Plot PDP สำหรับทุกฟีเจอร์
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    for feature in feature_names:
+        ax.plot(feature_ranges[feature], pdp_values[feature], label=feature)
+    
+    ax.set_title("Partial Dependence Plot for All Features")
+    ax.set_xlabel("Feature Value")
+    ax.set_ylabel("Predicted Price (Baht)")
+    ax.legend(loc="upper left")
+    
+    st.pyplot(fig)
     
     
