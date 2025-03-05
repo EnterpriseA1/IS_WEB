@@ -38,7 +38,7 @@ coapplicant = st.selectbox("Coapplicant (ผู้ร่วมยื่นขอ
 dependents = st.number_input("Dependents (จำนวนผู้ที่พึ่งพา)", value=0)
 income = st.number_input("Income (รายได้)", value=50000.0)
 loan_amount = st.number_input("Loan Amount (จำนวนเงินกู้)" ,value=200000.0)
-property_age = st.number_input("Property Age (อายุทรัพย์สิน)" value=10)
+property_age = st.number_input("Property Age (อายุทรัพย์สิน)", value=10)
 bedrooms = st.number_input("Bedrooms (จำนวนห้องนอน)",  value=3)
 bathrooms = st.number_input("Bathrooms (จำนวนห้องน้ำ)",  value=2)
 area_sqft = st.number_input("Area SqFt (ขนาดพื้นที่บ้าน ตร.ฟุต)", value=1000)
