@@ -79,18 +79,20 @@ st.markdown('<div class="main-header">💭 Neural Network Model Demo</div>', uns
 st.write("Interactive demo of neural network rainfall prediction model")
 
 # Load the model and scaler
+try:
+    model_path = Path.cwd() / "model_training" / "modelMLP.pkl"
+    scaler_path = Path.cwd() / "model_training" / "scalerMLP.pkl"
 
-model_path = Path.cwd() / "model_training" / "modelMLP.pkl"
-scaler_path = Path.cwd() / "model_training" / "scalerMLP.pkl"
+    with open(model_path, "rb") as file:
+        nn_model = pickle.load(file)
 
-with open(model_path, "rb") as file:
-    nn_model = pickle.load(file)
-
-with open(scaler_path, "rb") as file:
-    scaler = pickle.load(file)
-
-nn_model = None
-scaler = None
+    with open(scaler_path, "rb") as file:
+        scaler = pickle.load(file)
+except Exception as e:
+    st.error(f"Error loading model: {e}")
+    # Create placeholders for model and scaler to allow the UI to still function
+    nn_model = None
+    scaler = None
 
 # Feature names - the 7 features we use for prediction
 feature_names = [
