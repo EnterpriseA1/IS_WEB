@@ -34,14 +34,14 @@ matplotlib-inline==0.1.7
 mdurl==0.1.2
 narwhals==1.28.0
 nest-asyncio==1.6.0
-numpy==2.1.0
+numpy<2.1.0
 packaging==24.1
 pandas==2.2.3
 parso==0.8.4
 pillow==11.1.0
 platformdirs==4.2.2
 prompt_toolkit==3.0.47
-protobuf==5.29.3
+protobuf<5.0.0
 psutil==6.0.0
 pure_eval==0.2.3
 pyarrow==19.0.1
@@ -72,3 +72,5 @@ tzdata==2025.1
 urllib3==2.3.0
 watchdog==6.0.0
 wcwidth==0.2.13
+tensorflow==2.16.1
+keras==3.8.0
