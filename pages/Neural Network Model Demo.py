@@ -107,6 +107,12 @@ feature_names = [
 
 # Function to predict rainfall
 def predict_rainfall(features):
+    # Check if model and scaler are available first
+    if scaler is None or nn_model is None:
+        st.error("Model or scaler not loaded. Please check that TensorFlow/Keras is installed.")
+        # Return zeros instead of random values
+        return 0, 0.0
+        
     try:
         # Make sure we have 7 features (the number expected by the model)
         if len(features) != 7:
@@ -114,12 +120,23 @@ def predict_rainfall(features):
             return 0, 0.0
 
         # Scale the features
-        if scaler is not None:
-            features_scaled = scaler.transform([features])
-            # Predict
-            prediction_prob = nn_model.predict(features_scaled)
-            # Convert to binary prediction (0 or 1)
-            return (prediction_prob > 0.5).astype(int)[0][0], prediction_prob[0][0]
+        features_scaled = scaler.transform([features])
+        
+        # Make prediction
+        prediction_prob = nn_model.predict(features_scaled)
+        
+        # Ensure prediction is in the right format
+        # Handle different possible shapes of prediction_prob
+        if hasattr(prediction_prob, 'flatten'):
+            prediction_prob = prediction_prob.flatten()
+        
+        if isinstance(prediction_prob, (list, np.ndarray)) and len(prediction_prob) > 0:
+            prob_value = float(prediction_prob[0])  # Convert to float for safety
+            return 1 if prob_value > 0.5 else 0, prob_value
+        else:
+            # Fallback if prediction has unexpected format
+            st.error("Unexpected prediction format from model")
+            return 0, 0.0
     except Exception as e:
         st.error(f"Prediction error: {e}")
         return 0, 0.0
