@@ -221,35 +221,7 @@ X_test = scaler.transform(X_test)
         
         # Create feature scaling visualization using realistic values from the dataset
         # Using actual ranges from the original data
-        st.subheader("Effect of Feature Scaling")
-        
-        # Create a dataframe with realistic ranges based on the sample data
-        before_scaling = pd.DataFrame({
-            'Income': [67034.0, 40871.0, 34151.0, 68346.0, 46117.0],
-            'Loan_Amount': [200940.0, 294864.0, 251176.0, 208764.0, 133163.0],
-            'Area_SqFt': [1794.0, 1395.0, 1658.0, 1244.0, 2588.0]
-        })
-        
-        # Create scaler for visualization
-        from sklearn.preprocessing import StandardScaler
-        scaler_viz = StandardScaler()
-        scaled_data = scaler_viz.fit_transform(before_scaling)
-        after_scaling = pd.DataFrame(scaled_data, columns=before_scaling.columns)
-        
-        fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-        
-        # Plot before scaling
-        axes[0].set_title('Before Scaling', fontsize=14)
-        sns.boxplot(data=before_scaling, ax=axes[0])
-        axes[0].set_ylabel('Value')
-        
-        # Plot after scaling
-        axes[1].set_title('After Scaling', fontsize=14)
-        sns.boxplot(data=after_scaling, ax=axes[1])
-        axes[1].set_ylabel('Standardized Value')
-        
-        plt.tight_layout()
-        st.pyplot(fig)
+       
     
     with tabs[1]:
         st.header("Model Architecture")
