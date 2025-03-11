@@ -6,8 +6,8 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
-import tensorflow as tf  
-from tensorflow import keras
+# Removed tensorflow import
+# Removed sklearn.inspection import for permutation_importance as it was causing issues
 
 # Set page configuration
 st.set_page_config(
