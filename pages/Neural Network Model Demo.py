@@ -6,8 +6,8 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
-# Removed tensorflow import
-# Removed sklearn.inspection import for permutation_importance as it was causing issues
+import tensorflow as tf
+
 
 # Set page configuration
 st.set_page_config(
@@ -81,11 +81,11 @@ st.write("Interactive demo of neural network rainfall prediction model")
 
 # Load the model and scaler
 try:
-    model_path = Path.cwd() / "model_training" / "modelMLP.pkl"
+    model_path = Path.cwd() / "model_training" / "modelMLP.keras"
     scaler_path = Path.cwd() / "model_training" / "scalerMLP.pkl"
 
     with open(model_path, "rb") as file:
-        nn_model = pickle.load(file)
+        nn_model = tf.keras.models.load_model(model_path)
 
     with open(scaler_path, "rb") as file:
         scaler = pickle.load(file)
