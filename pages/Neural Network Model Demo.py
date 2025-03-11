@@ -120,9 +120,6 @@ def predict_rainfall(features):
             prediction_prob = nn_model.predict(features_scaled)
             # Convert to binary prediction (0 or 1)
             return (prediction_prob > 0.5).astype(int)[0][0], prediction_prob[0][0]
-        else:
-            # If model is not loaded, return a dummy prediction
-            return 1 if np.random.random() > 0.5 else 0, np.random.random()
     except Exception as e:
         st.error(f"Prediction error: {e}")
         return 0, 0.0
