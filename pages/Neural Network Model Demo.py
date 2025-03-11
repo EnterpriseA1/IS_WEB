@@ -84,8 +84,8 @@ try:
     model_path = Path.cwd() / "model_training" / "modelMLP.keras"
     scaler_path = Path.cwd() / "model_training" / "scalerMLP.pkl"
 
-    with open(model_path, "rb") as file:
-        nn_model = tf.keras.models.load_model(model_path)
+    
+    nn_model = tf.keras.models.load_model(model_path)
 
     with open(scaler_path, "rb") as file:
         scaler = pickle.load(file)
