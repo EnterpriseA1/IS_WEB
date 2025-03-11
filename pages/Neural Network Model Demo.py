@@ -80,18 +80,23 @@ st.markdown('<div class="main-header">💭 Neural Network Model Demo</div>', uns
 st.write("Interactive demo of neural network rainfall prediction model")
 
 # Load the model and scaler
+model_loaded = False
 try:
     model_path = Path.cwd() / "model_training" / "modelMLP.keras"
     scaler_path = Path.cwd() / "model_training" / "scalerMLP.pkl"
-
     
     nn_model = tf.keras.models.load_model(model_path)
 
     with open(scaler_path, "rb") as file:
         scaler = pickle.load(file)
+        
+    # Only set this flag if both model and scaler loaded successfully
+    model_loaded = True
+    st.success("Model loaded successfully!")
 except Exception as e:
     st.error(f"Error loading model: {e}")
-    # Create placeholders for model and scaler to allow the UI to still function
+    st.warning("Prediction functionality will be disabled until the model is available.")
+    # Don't create placeholders for model and scaler
     nn_model = None
     scaler = None
 
@@ -108,30 +113,28 @@ feature_names = [
 
 # Function to predict rainfall
 def predict_rainfall(features):
+    if not model_loaded:
+        st.error("Cannot make predictions: Model is not loaded.")
+        return None, None
+        
     try:
         # Make sure we have 7 features (the number expected by the model)
         if len(features) != 7:
             st.error(f"Feature count mismatch: got {len(features)}, expected 7")
-            return 0, 0.0
+            return None, None
 
-        # Scale the features
-        if scaler is not None:
-            features_scaled = scaler.transform([features])
-            # Predict
-            prediction_prob = nn_model.predict(features_scaled)
-            # Convert to binary prediction (0 or 1)
-            return (prediction_prob > 0.5).astype(int)[0][0], prediction_prob[0][0]
-        else:
-            # If model is not loaded, return a dummy prediction
-            return 1 if np.random.random() > 0.5 else 0, np.random.random()
+        # Scale the features and predict
+        features_scaled = scaler.transform([features])
+        prediction_prob = nn_model.predict(features_scaled)
+        # Convert to binary prediction (0 or 1)
+        return (prediction_prob > 0.5).astype(int)[0][0], prediction_prob[0][0]
     except Exception as e:
         st.error(f"Prediction error: {e}")
-        return 0, 0.0
+        return None, None
 
 # Calculate feature importance using a balanced approach
 def calculate_nn_importance():
-    # Use predefined balanced importance values based on meteorological understanding
-    # These values represent a realistic distribution of feature importance for rainfall prediction
+    # Define default importance values
     importance_scores = np.array([
         0.18,  # Max Temperature
         0.14,  # Min Temperature 
@@ -142,90 +145,93 @@ def calculate_nn_importance():
         0.05   # Pressure
     ])
     
+    if not model_loaded:
+        st.info("Using default feature importance values since model is not loaded.")
+        return importance_scores
+    
     # Try model-based calculation only if model and scaler are available
-    if nn_model is not None and scaler is not None:
-        try:
-            # Create a more controlled sample dataset
-            np.random.seed(42)
-            sample_size = 200
+    try:
+        # Create a more controlled sample dataset
+        np.random.seed(42)
+        sample_size = 200
+        
+        # Create a dataset where we control the feature ranges to ensure balance
+        sample_data = np.zeros((sample_size, 7))
+        
+        # Fill with realistic meteorological data
+        sample_data[:, 0] = np.linspace(10, 40, sample_size)  # Max Temperature: 10-40°C
+        sample_data[:, 1] = np.linspace(5, 30, sample_size)   # Min Temperature: 5-30°C
+        sample_data[:, 2] = np.linspace(30, 100, sample_size) # Humidity 9AM: 30-100%
+        sample_data[:, 3] = np.linspace(20, 90, sample_size)  # Humidity 3PM: 20-90%
+        sample_data[:, 4] = np.linspace(0, 50, sample_size)   # Wind Speed: 0-50 km/h
+        sample_data[:, 5] = np.linspace(0, 30, sample_size)   # Rainfall Yesterday: 0-30mm
+        sample_data[:, 6] = np.linspace(980, 1030, sample_size) # Pressure: 980-1030 hPa
+        
+        # Scale the data
+        X_scaled = scaler.transform(sample_data)
+        
+        # Initialize storage for feature impacts
+        feature_impacts = []
+        
+        # For each feature, calculate its impact
+        for i in range(7):
+            # Create 10 versions of the dataset with different values for this feature
+            feature_range = np.linspace(-3, 3, 10)  # standardized units
             
-            # Create a dataset where we control the feature ranges to ensure balance
-            sample_data = np.zeros((sample_size, 7))
-            
-            # Fill with realistic meteorological data
-            sample_data[:, 0] = np.linspace(10, 40, sample_size)  # Max Temperature: 10-40°C
-            sample_data[:, 1] = np.linspace(5, 30, sample_size)   # Min Temperature: 5-30°C
-            sample_data[:, 2] = np.linspace(30, 100, sample_size) # Humidity 9AM: 30-100%
-            sample_data[:, 3] = np.linspace(20, 90, sample_size)  # Humidity 3PM: 20-90%
-            sample_data[:, 4] = np.linspace(0, 50, sample_size)   # Wind Speed: 0-50 km/h
-            sample_data[:, 5] = np.linspace(0, 30, sample_size)   # Rainfall Yesterday: 0-30mm
-            sample_data[:, 6] = np.linspace(980, 1030, sample_size) # Pressure: 980-1030 hPa
-            
-            # Scale the data
-            X_scaled = scaler.transform(sample_data)
-            
-            # Initialize storage for feature impacts
-            feature_impacts = []
-            
-            # For each feature, calculate its impact
-            for i in range(7):
-                # Create 10 versions of the dataset with different values for this feature
-                feature_range = np.linspace(-3, 3, 10)  # standardized units
+            predictions = []
+            for val in feature_range:
+                # Make a copy of the middle sample (average weather)
+                X_temp = X_scaled[sample_size//2:sample_size//2+1].copy()
                 
-                predictions = []
-                for val in feature_range:
-                    # Make a copy of the middle sample (average weather)
-                    X_temp = X_scaled[sample_size//2:sample_size//2+1].copy()
-                    
-                    # Modify only the current feature
-                    X_temp[0, i] = val
-                    
-                    # Get prediction
-                    pred = nn_model.predict(X_temp)[0][0]
-                    predictions.append(pred)
+                # Modify only the current feature
+                X_temp[0, i] = val
                 
-                # Calculate max change in prediction
-                impact = max(predictions) - min(predictions)
-                feature_impacts.append(impact)
+                # Get prediction
+                pred = nn_model.predict(X_temp)[0][0]
+                predictions.append(pred)
             
-            # Convert to importance scores
-            feature_impacts = np.array(feature_impacts)
+            # Calculate max change in prediction
+            impact = max(predictions) - min(predictions)
+            feature_impacts.append(impact)
+        
+        # Convert to importance scores
+        feature_impacts = np.array(feature_impacts)
+        
+        # If we got meaningful variation, use it
+        if np.sum(feature_impacts) > 0 and np.max(feature_impacts) > 0.05:
+            importance_scores = feature_impacts
+        
+        # Ensure no feature completely dominates (max 40%)
+        if np.max(importance_scores) / np.sum(importance_scores) > 0.4:
+            # Get the index of the largest value
+            max_idx = np.argmax(importance_scores)
             
-            # If we got meaningful variation, use it
-            if np.sum(feature_impacts) > 0 and np.max(feature_impacts) > 0.05:
-                importance_scores = feature_impacts
+            # Reduce its value to be at most 35% of the total
+            total_importance = np.sum(importance_scores)
+            target_max = 0.35 * total_importance
             
-            # Ensure no feature completely dominates (max 40%)
-            if np.max(importance_scores) / np.sum(importance_scores) > 0.4:
-                # Get the index of the largest value
-                max_idx = np.argmax(importance_scores)
+            if importance_scores[max_idx] > target_max:
+                excess = importance_scores[max_idx] - target_max
+                importance_scores[max_idx] = target_max
                 
-                # Reduce its value to be at most 35% of the total
-                total_importance = np.sum(importance_scores)
-                target_max = 0.35 * total_importance
+                # Distribute the excess to other features proportionally
+                other_indices = [i for i in range(7) if i != max_idx]
+                other_sum = np.sum(importance_scores[other_indices])
                 
-                if importance_scores[max_idx] > target_max:
-                    excess = importance_scores[max_idx] - target_max
-                    importance_scores[max_idx] = target_max
-                    
-                    # Distribute the excess to other features proportionally
-                    other_indices = [i for i in range(7) if i != max_idx]
-                    other_sum = np.sum(importance_scores[other_indices])
-                    
-                    if other_sum > 0:
-                        for i in other_indices:
-                            importance_scores[i] += excess * (importance_scores[i] / other_sum)
-            
-            # Ensure no feature has zero importance (min 3%)
-            for i in range(len(importance_scores)):
-                if importance_scores[i] / np.sum(importance_scores) < 0.03:
-                    importance_scores[i] = 0.03 * np.sum(importance_scores)
-            
-            # Re-normalize
-            importance_scores = importance_scores / np.sum(importance_scores)
-            
-        except Exception as e:
-            st.warning(f"Used balanced importance values due to: {str(e)}")
+                if other_sum > 0:
+                    for i in other_indices:
+                        importance_scores[i] += excess * (importance_scores[i] / other_sum)
+        
+        # Ensure no feature has zero importance (min 3%)
+        for i in range(len(importance_scores)):
+            if importance_scores[i] / np.sum(importance_scores) < 0.03:
+                importance_scores[i] = 0.03 * np.sum(importance_scores)
+        
+        # Re-normalize
+        importance_scores = importance_scores / np.sum(importance_scores)
+        
+    except Exception as e:
+        st.warning(f"Using default importance values due to: {str(e)}")
     
     return importance_scores
 
@@ -348,9 +354,10 @@ with col2:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Prediction button
-if st.button("🔍 Predict Rainfall", use_container_width=True):
+# Prediction button with disabled state when model isn't loaded
+prediction_button = st.button("🔍 Predict Rainfall", use_container_width=True, disabled=not model_loaded)
 
+if prediction_button:
     # Collect the 7 features our model expects
     input_features = [
         max_temp,
@@ -364,64 +371,66 @@ if st.button("🔍 Predict Rainfall", use_container_width=True):
 
     prediction, probability = predict_rainfall(input_features)
 
-    # Display prediction with enhanced styling
-    if prediction == 1:
-        st.markdown(f'<div class="prediction-result-rain">🌧️ Rain is predicted today (Probability: {probability:.2%})</div>', unsafe_allow_html=True)
-    else:
-        st.markdown(f'<div class="prediction-result-no-rain">☀️ No rain is predicted today (Probability of rain: {probability:.2%})</div>', unsafe_allow_html=True)
+    # Only display prediction if we got valid results
+    if prediction is not None and probability is not None:
+        # Display prediction with enhanced styling
+        if prediction == 1:
+            st.markdown(f'<div class="prediction-result-rain">🌧️ Rain is predicted today (Probability: {probability:.2%})</div>', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="prediction-result-no-rain">☀️ No rain is predicted today (Probability of rain: {probability:.2%})</div>', unsafe_allow_html=True)
 
-    # Display confidence gauge with improved styling
-    st.markdown('<div class="section-header">Prediction Confidence</div>', unsafe_allow_html=True)
-    
-    # Calculate confidence level
-    rain_prob = probability if prediction == 1 else 1 - probability
-    
-    # Add a label before the progress bar
-    st.markdown(f'<div class="confidence-label">Confidence: {rain_prob:.2%}</div>', unsafe_allow_html=True)
-    
-    # Show the progress bar
-    st.progress(float(rain_prob))
+        # Display confidence gauge with improved styling
+        st.markdown('<div class="section-header">Prediction Confidence</div>', unsafe_allow_html=True)
+        
+        # Calculate confidence level
+        rain_prob = probability if prediction == 1 else 1 - probability
+        
+        # Add a label before the progress bar
+        st.markdown(f'<div class="confidence-label">Confidence: {rain_prob:.2%}</div>', unsafe_allow_html=True)
+        
+        # Show the progress bar
+        st.progress(float(rain_prob))
 
-    # Feature Importance section with better styling
-    st.markdown('<div class="section-header">Feature Importance Analysis</div>', unsafe_allow_html=True)
+        # Feature Importance section with better styling
+        st.markdown('<div class="section-header">Feature Importance Analysis</div>', unsafe_allow_html=True)
 
-    with st.spinner("Calculating feature importance... Please wait"):
-        try:
-            # Calculate feature importance
-            importances = calculate_nn_importance()
-            
-            # Create a copy of original values before normalization
-            original_importances = importances.copy()
-            
-            # Normalize for visualization
-            if np.sum(importances) > 0:
-                normalized_importances = importances / np.sum(importances)
-            else:
-                normalized_importances = importances
-            
-            # Create the plot with normalized values
-            fig = plot_feature_importance(
-                normalized_importances,
-                feature_names,
-                "Feature Importance in Neural Network Model"
-            )
-            st.pyplot(fig)
+        with st.spinner("Calculating feature importance... Please wait"):
+            try:
+                # Calculate feature importance
+                importances = calculate_nn_importance()
+                
+                # Create a copy of original values before normalization
+                original_importances = importances.copy()
+                
+                # Normalize for visualization
+                if np.sum(importances) > 0:
+                    normalized_importances = importances / np.sum(importances)
+                else:
+                    normalized_importances = importances
+                
+                # Create the plot with normalized values
+                fig = plot_feature_importance(
+                    normalized_importances,
+                    feature_names,
+                    "Feature Importance in Neural Network Model"
+                )
+                st.pyplot(fig)
 
-            # Use the normalized values for the dataframe
-            indices = np.argsort(normalized_importances)[::-1]
-            importance_df = pd.DataFrame(
-                {
-                    "Feature": np.array(feature_names)[indices],
-                    "Importance": normalized_importances[indices],
-                    "Percentage": [f"{x:.2%}" for x in normalized_importances[indices]]
-                }
-            )
-            
-            # Display dataframe
-            st.dataframe(importance_df, use_container_width=True)
-            
-        except Exception as e:
-            st.error(f"Error displaying feature importance: {e}")
+                # Use the normalized values for the dataframe
+                indices = np.argsort(normalized_importances)[::-1]
+                importance_df = pd.DataFrame(
+                    {
+                        "Feature": np.array(feature_names)[indices],
+                        "Importance": normalized_importances[indices],
+                        "Percentage": [f"{x:.2%}" for x in normalized_importances[indices]]
+                    }
+                )
+                
+                # Display dataframe
+                st.dataframe(importance_df, use_container_width=True)
+                
+            except Exception as e:
+                st.error(f"Error displaying feature importance: {e}")
 
 # Add a footer
 st.markdown("""---""")
