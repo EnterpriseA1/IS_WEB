@@ -40,6 +40,50 @@ def main():
         df_example = pd.DataFrame(data)
         st.dataframe(df_example)
         
+        # Dataset access with relative path and interactive viewing
+        st.markdown("### Dataset Access")
+        
+        # Information about the dataset
+        st.write("""
+        [Download rainfall_data_improved.csv](https://github.com/EnterpriseA1/IS_WEB/blob/main/Dataset/house_prices_with_missing.csv)
+        
+        **Dataset Specifications:**
+        - Format: CSV (Comma Separated Values)
+        - Size: 500 records (293 after cleaning)
+        - Features: 16 columns (mix of categorical and numerical)
+        - Missing values: Present in multiple columns
+        """)
+        
+        # Add a button to load sample data
+        if st.button("📊 View More Data Samples"):
+            try:
+                # Path is relative to where the Streamlit app is run
+                sample_path = "../Dataset/house_prices_with_missing.csv"
+                
+                # Try to load a few more rows of sample data
+                sample_df = pd.read_csv(sample_path, nrows=10)
+                st.write("Showing first 10 rows of the dataset:")
+                st.dataframe(sample_df)
+            except Exception as e:
+                st.error(f"Error loading sample data: {e}")
+                st.info("Make sure the dataset is located at '../Dataset/house_prices_with_missing.csv' relative to this application.")
+        
+        # Add code example for loading the dataset
+        st.markdown("#### How to load this dataset in your code:")
+        st.code("""
+# Load the dataset using pandas
+import pandas as pd
+
+# Relative path to the dataset
+dataset_path = "../Dataset/house_prices_with_missing.csv"
+
+# Load the data
+df = pd.read_csv(dataset_path)
+
+# Check dataset information
+print(f"Loaded {len(df)} rows and {len(df.columns)} columns")
+        """, language="python")
+        
         st.write("- **Target Variable**: Price (house price in numerical format)")
         st.write("- **Total Samples**: 293 records after cleaning (out of 500 original records)")
         

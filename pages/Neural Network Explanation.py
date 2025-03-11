@@ -10,7 +10,7 @@ def main():
     st.title("🔶 Neural Network Explanation")
     
     # Create tabs
-    tabs = st.tabs(["Data Preparation", "Theory of MLP", "Model Architecture", "Training & Results"])
+    tabs = st.tabs(["Data Preparation", "Model Architecture", "Training & Results"])
     
     with tabs[0]:
         st.header("Data Preparation")
@@ -49,6 +49,20 @@ def main():
         }
         df_example = pd.DataFrame(sample_data)
         st.dataframe(df_example)
+        
+        # Dataset link
+        st.markdown("### Dataset Access")
+        st.markdown("""
+        You can access the full dataset (1000 rows, 8 columns) here:
+        
+        [Download rainfall_data_improved.csv](https://github.com/EnterpriseA1/IS_WEB/blob/main/Dataset/rainfall_data_improved.csv)
+        
+        **Dataset Specifications:**
+        - Format: CSV (Comma Separated Values)
+        - Size: 1000 records
+        - Features: 8 columns (all float type)
+        - Missing values: ~5% per column
+        """)
         
         # Data Preparation Steps
         st.subheader("My Data Preprocessing Steps")
@@ -127,43 +141,30 @@ X_scaled = scaler.fit_transform(X)
         - Standardization helps the neural network converge faster during training
         """)
         
-        # Create a visualization showing before/after scaling using actual data ranges
+        # Create an improved visualization showing before/after scaling using actual data ranges
         fig, ax = plt.subplots(1, 2, figsize=(10, 4))
         
-        # Create example data based on actual ranges
-        features = ['MaxTemp', 'MinTemp', 'Hum9AM', 'Hum3PM', 'Wind', 'Rain', 'Press']
-        
-        # Before scaling - use realistic values based on your dataset
+        # Before scaling - use realistic values
         before_scaling = np.array([
             [27.35, 15.28, 70.38, 70.47, 15.06, 10.06, 1004.63]  # using means
         ])
         
-        # Create the before scaling bar chart
+        features = ['MaxTemp', 'MinTemp', 'Hum9AM', 'Hum3PM', 'Wind', 'Rain', 'Press']
         ax[0].bar(features, before_scaling[0])
         ax[0].set_title('Before Standardization')
         ax[0].set_ylabel('Value')
         ax[0].tick_params(axis='x', rotation=45)
         
-        # After scaling - use realistic standardized values
-        # Create some random values that would represent data points after standardization
-        # Typically standardized values will be between -2 and 2 for most data points
-        np.random.seed(42)  # For reproducibility
-        after_scaling = np.random.normal(0, 0.8, 7)  # Generate random values around 0 with std=0.8
-        
-        # Create the after scaling bar chart
-        bars = ax[1].bar(features, after_scaling)
-        
-        # Add colors to distinguish positive and negative values
-        for i, bar in enumerate(bars):
-            if after_scaling[i] >= 0:
-                bar.set_color('#2196F3')  # Blue for positive
-            else:
-                bar.set_color('#FF5722')  # Orange for negative
-                
+        # After scaling - more realistic standardized values
+        after_scaling = np.array([
+            [0.42, -0.68, 0.52, 1.24, -0.63, -0.82, 1.28]  # realistic standardized values
+        ])
+        colors = ['#1976D2' if x >= 0 else '#FF5722' for x in after_scaling[0]]
+        ax[1].bar(features, after_scaling[0], color=colors)
         ax[1].set_title('After Standardization')
         ax[1].set_ylabel('Standardized Value')
-        ax[1].set_ylim(-2, 2)  # Set reasonable y-axis limits for standardized data
-        ax[1].axhline(y=0, color='k', linestyle='-', alpha=0.2)  # Add a horizontal line at y=0
+        ax[1].axhline(y=0, color='black', linestyle='-', alpha=0.3)
+        ax[1].set_ylim(-2, 2)  # Set reasonable limits for standardized values
         ax[1].tick_params(axis='x', rotation=45)
         
         plt.tight_layout()
@@ -267,165 +268,6 @@ X_train, X_test, y_train, y_test = train_test_split(
         st.dataframe(df_clean)
     
     with tabs[1]:
-        st.header("Theory of Multilayer Perceptron (MLP)")
-        
-        st.subheader("What is a Multilayer Perceptron?")
-        st.write("""
-        A Multilayer Perceptron (MLP) is a type of artificial neural network that consists of at least three layers of nodes:
-        - An input layer
-        - One or more hidden layers
-        - An output layer
-        
-        MLPs are fully connected networks, meaning every node in one layer is connected to every node in the following layer.
-        """)
-        
-        # Add a simple illustration of a neuron
-        col1, col2, col3 = st.columns([1, 3, 1])
-        with col2:
-            neuron_diagram = """
-            ```
-                        Inputs            Weights
-                          x₁   ────────▶   w₁ 
-                                           │
-                          x₂   ────────▶   w₂   ┌───────┐
-                                           │    │       │
-                          ...              ...  │  ∑    │─────▶ Activation ─────▶ Output
-                                           │    │       │        Function
-                          xₙ   ────────▶   wₙ   └───────┘
-                                                    ▲
-                                                    │
-                                                  Bias
-            ```
-            """
-            st.markdown(neuron_diagram)
-        
-        st.subheader("How MLPs Learn")
-        st.write("""
-        MLPs learn through a process called backpropagation, which involves:
-        
-        1. **Forward Pass**:
-           - Input data passes through the network
-           - Each neuron applies weights, adds bias, and applies an activation function
-           - Produces an output prediction
-        
-        2. **Error Calculation**:
-           - Compare the prediction with the actual target value
-           - Calculate the error (loss)
-        
-        3. **Backward Pass**:
-           - Propagate the error backward through the network
-           - Update weights and biases to minimize the error
-           - Use gradient descent or variants (like Adam optimizer in our model)
-        """)
-        
-        st.subheader("Key Components of MLP")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("#### Activation Functions")
-            st.write("""
-            **ReLU (Rectified Linear Unit)**:
-            - Used in hidden layers
-            - f(x) = max(0, x)
-            - Benefits: Reduces vanishing gradient problem, computationally efficient
-            
-            **Sigmoid**:
-            - Used in output layer for binary classification
-            - f(x) = 1 / (1 + e^(-x))
-            - Outputs values between 0 and 1 (probability)
-            """)
-            
-            # Simple visualization of activation functions
-            fig, ax = plt.subplots(1, 2, figsize=(8, 3))
-            x = np.linspace(-5, 5, 100)
-            
-            # ReLU
-            relu = np.maximum(0, x)
-            ax[0].plot(x, relu, 'b-')
-            ax[0].set_title('ReLU')
-            ax[0].grid(True, linestyle='--', alpha=0.6)
-            ax[0].axhline(y=0, color='k', linestyle='-', alpha=0.3)
-            ax[0].axvline(x=0, color='k', linestyle='-', alpha=0.3)
-            
-            # Sigmoid
-            sigmoid = 1 / (1 + np.exp(-x))
-            ax[1].plot(x, sigmoid, 'r-')
-            ax[1].set_title('Sigmoid')
-            ax[1].grid(True, linestyle='--', alpha=0.6)
-            ax[1].axhline(y=0, color='k', linestyle='-', alpha=0.3)
-            ax[1].axvline(x=0, color='k', linestyle='-', alpha=0.3)
-            
-            plt.tight_layout()
-            st.pyplot(fig)
-            
-        with col2:
-            st.markdown("#### Loss Function and Optimizer")
-            st.write("""
-            **Mean Squared Error (MSE)**:
-            - Measures the average squared difference between predictions and actual values
-            - MSE = (1/n) * Σ(y_actual - y_predicted)²
-            - Suitable for regression and binary classification with sigmoid outputs
-            
-            **Adam Optimizer**:
-            - Adaptive learning rate optimization algorithm
-            - Combines advantages of AdaGrad and RMSProp
-            - Features:
-              - Adaptive learning rates for each parameter
-              - Momentum-based gradient updates
-              - Efficient handling of sparse gradients
-            """)
-            
-            # Simple visualization of MSE
-            fig, ax = plt.subplots(figsize=(8, 3))
-            actual = np.array([0, 0, 1, 1, 0])
-            predictions = np.array([0.1, 0.2, 0.8, 0.7, 0.3])
-            errors = (actual - predictions) ** 2
-            
-            x = np.arange(len(actual))
-            width = 0.35
-            
-            ax.bar(x - width/2, actual, width, label='Actual', alpha=0.7)
-            ax.bar(x + width/2, predictions, width, label='Predicted', alpha=0.7)
-            
-            for i, error in enumerate(errors):
-                ax.text(i, max(actual[i], predictions[i]) + 0.05, f'Error: {error:.2f}', ha='center')
-                
-            ax.set_title('Mean Squared Error Example')
-            ax.set_ylabel('Value')
-            ax.set_xticks(x)
-            ax.set_xticklabels([f'Sample {i+1}' for i in range(len(actual))])
-            ax.legend()
-            
-            plt.tight_layout()
-            st.pyplot(fig)
-            
-        st.subheader("Advantages of MLP for Rainfall Prediction")
-        st.write("""
-        1. **Pattern Recognition**: MLPs excel at recognizing complex patterns in meteorological data
-        
-        2. **Non-linearity**: Weather phenomena involve non-linear relationships that MLPs can model effectively
-        
-        3. **Feature Learning**: The multiple layers can learn hierarchical features from raw weather metrics
-        
-        4. **Adaptability**: Can adjust to different weather patterns through training
-        
-        5. **Probabilistic Output**: Sigmoid output provides probability of rain, which is more informative than a simple yes/no prediction
-        """)
-        
-        st.subheader("Potential Limitations")
-        st.write("""
-        1. **Overfitting Risk**: Complex networks may memorize training data rather than generalize
-           - Solution: We used a validation set to monitor this
-        
-        2. **Black Box Nature**: It's difficult to interpret exactly how the model makes its decisions
-        
-        3. **Requires Sufficient Data**: Needed adequate samples of both rainy and non-rainy days
-        
-        4. **Feature Preprocessing**: Required careful scaling of features with different ranges
-        """)
-    
-    with tabs[2]:
         st.header("Model Architecture")
         
         # Model diagram (simplified text-based representation)
@@ -564,19 +406,18 @@ print(f"Error Rate: {(1-accuracy) * 100:.2f}%")
         This high accuracy demonstrates the effectiveness of my neural network model for rainfall prediction.
         """)
         
-        # Saving the model
+        # Updated code for saving the model using Keras format
         st.subheader("Saving the Model")
         st.code("""
 # Save the model and scaler for future use
-with open('modelMLP.pkl', 'wb') as f:
-    pickle.dump(model, f)
+model.save('modelMLP.keras')  # Save model in Keras format
 
 with open("scalerMLP.pkl", "wb") as file:
     pickle.dump(scaler, file)
         """, language="python")
         
         st.write("""
-        I saved the model and scaler so they can be loaded later for making predictions on new data.
+        I saved the model in Keras format (.keras) so it can be loaded later for making predictions on new data. The scaler is still saved using pickle since it's from scikit-learn.
         """)
 
 if __name__ == "__main__":
