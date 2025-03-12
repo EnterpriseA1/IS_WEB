@@ -7,25 +7,6 @@ import streamlit.components.v1 as components
 # Set up your page config first
 st.set_page_config(page_title="ML Project", page_icon="🔍", layout="wide")
 
-# Inject custom CSS to replace "index" with "Overview" in the sidebar
-components.html(
-    """
-    <style>
-    [data-testid="stSidebarNav"] li:first-child a p {
-        visibility: hidden;
-        position: relative;
-    }
-    [data-testid="stSidebarNav"] li:first-child a p::after {
-        content: "Overview";
-        visibility: visible;
-        position: absolute;
-        left: 0;
-    }
-    </style>
-    """,
-    height=0
-)
-
 # สร้าง container หลัก
 main_container = st.container()
 
