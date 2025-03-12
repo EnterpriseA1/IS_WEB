@@ -53,7 +53,7 @@ with main_container:
           - ช่วยคำนวณ Feature Importance
         
         - **ChatGPT**:
-          - ช่วยในการสร้าง missing values และ wrong values เพื่อทดสอบโมเดล
+          - ช่วยในการสร้าง missing values ,wrong values และสร้างบาง column ใน house price เพื่อทดสอบโมเดล
           - ช่วย Guide Model Training
         """)
         
