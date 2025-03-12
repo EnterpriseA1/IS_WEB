@@ -1,14 +1,11 @@
-[browser]
-serverAddress = "localhost"
-gatherUsageStats = false
-
-[theme]
-base = "dark"
-
 [server]
 headless = true
 enableCORS = false
 enableXsrfProtection = true
 
-[pages]
-default = "Overview"
+[browser]
+serverAddress = "localhost"
+
+[runner]
+# This makes Overview.py your main entry point
+mainScriptPath = "Overview.py"
