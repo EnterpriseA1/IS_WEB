@@ -1,9 +1,24 @@
 import streamlit as st
-import os
-import sys
 
-# Add the current directory to the path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+st.set_page_config(
+    page_title="Overview",
+    page_icon="🔍",
+)
 
-# Import and run the Overview module
-from Overview import *
+# This hack tries to change how the page appears in the sidebar
+import streamlit.components.v1 as components
+
+# Inject custom CSS to change the sidebar text
+components.html(
+    """
+    <style>
+    [data-testid="stSidebarNav"] li:first-child a div:first-child {
+        display: none;
+    }
+    [data-testid="stSidebarNav"] li:first-child a div:nth-child(2)::before {
+        content: "Overview";
+    }
+    </style>
+    """,
+    height=0
+)
