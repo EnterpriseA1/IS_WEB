@@ -25,7 +25,7 @@ def main():
         st.write("""
         ชุดข้อมูลนี้ประกอบด้วยตัวชี้วัดสภาพอากาศต่างๆ ที่ใช้ในการทำนายว่าวันนี้จะมีฝนตกหรือไม่
         
-        **คำอธิบายคุณลักษณะ:**
+        **คำอธิบายFeatures:**
         - **MaxTemperature**: อุณหภูมิสูงสุดประจำวัน (องศาเซลเซียส)
         - **MinTemperature**: อุณหภูมิต่ำสุดประจำวัน (องศาเซลเซียส)
         - **Humidity9AM**: เปอร์เซ็นต์ความชื้นช่วงเช้า 9 โมง
@@ -107,7 +107,7 @@ y = df['RainToday'].values               # Target variable
         
         # ใช้สถิติจริงจากชุดข้อมูล
         st.write("""
-        ตัวชี้วัดสภาพอากาศทั้งหมดถูกนำมาใช้เป็นคุณลักษณะ:
+        ตัวชี้วัดสภาพอากาศทั้งหมดถูกนำมาใช้เป็นFeatures:
         - MaxTemperature: ช่วงตั้งแต่ 19.44 ถึง 39.21
         - MinTemperature: ช่วงตั้งแต่ 6.37 ถึง 22.34
         - Humidity9AM: ช่วงตั้งแต่ 41.09 ถึง 98.52
@@ -181,7 +181,7 @@ X_train, X_test, y_train, y_test = train_test_split(
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("#### การกระจายของตัวแปรเป้าหมาย (RainToday)")
+            st.markdown("#### การกระจายของTarget (RainToday)")
             # อัปเดตด้วยอัตราส่วนจริงจาก MLP
             rain_counts = {"0": 445, "1": 222}  # ปรับเป็นสัดส่วนจริง (ประมาณ 2:1)
             rain_percent = {"0": 66.7, "1": 33.3}
@@ -220,7 +220,7 @@ X_train, X_test, y_train, y_test = train_test_split(
             st.dataframe(pd.DataFrame(summary_stats))
         
         # แสดงตัวอย่างชุดข้อมูลที่ทำความสะอาดแล้ว
-        st.markdown("#### ตัวอย่างชุดข้อมูลที่ทำความสะอาดแล้ว")
+        st.markdown("#### ตัวอย่างชุดข้อมูลที่clean แล้ว")
         clean_data = {
             "MaxTemperature": [20.59, 20.13, 39.21, 38.03, 29.45],
             "MinTemperature": [11.08, 8.68, 22.34, 8.40, 18.13],
@@ -238,7 +238,7 @@ X_train, X_test, y_train, y_test = train_test_split(
         st.header("Model Architecture")
         
         # แผนภาพโมเดล (การนำเสนอแบบข้อความอย่างง่าย)
-        st.subheader("โครงสร้างเครือข่ายประสาทเทียม")
+        st.subheader("โครงสร้างNeural Network")
         st.write("โมเดล MLP ที่ใช้มีโครงสร้างดังต่อไปนี้:")
         
         # การแสดงผลเครือข่ายอย่างง่าย
